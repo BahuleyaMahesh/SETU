@@ -26,3 +26,27 @@ class AlertResponse(BaseModel):
     
     class Config:
         from_attributes = True
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    phone_number: Optional[str] = None
+    role: Optional[str] = None
+
+class OTPRequest(BaseModel):
+    phone_number: str
+
+class OTPVerify(BaseModel):
+    phone_number: str
+    otp: str
+
+class UserResponse(BaseModel):
+    id: UUID
+    phone_number: str
+    role: str
+    is_active: bool
+
+    class Config:
+        from_attributes = True

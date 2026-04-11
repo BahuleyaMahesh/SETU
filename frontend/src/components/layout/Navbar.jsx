@@ -15,7 +15,8 @@ export default function Navbar() {
         </Link>
         <div className="nav-links">
           <Link to="/" className={location.pathname === '/' ? 'active' : ''}>Home</Link>
-          <Link to="/features">Features</Link>
+          <Link to="/demo" className={location.pathname === '/demo' ? 'active' : ''}>Demo</Link>
+          <Link to="/admin" className={location.pathname === '/admin' ? 'active' : ''}>Admin</Link>
           <Link to="/dashboard" className={`btn-primary ${location.pathname === '/dashboard' ? 'active-btn' : ''}`}>
             Access Dashboard
           </Link>

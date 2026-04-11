@@ -1,11 +1,22 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api import webhooks
+from app.api import webhooks, auth, demo
+from app.scheduler import start_scheduler
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    start_scheduler()
+    yield
+    # Shutdown
+    pass
 
 app = FastAPI(
     title="SETU API",
     description="Backend for SETU - AI Powered Voice-Based Patient Monitoring",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 # CORS middleware for Next.js frontend
@@ -17,7 +28,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["Auth"])
 app.include_router(webhooks.router, prefix="/api/v1/webhooks", tags=["Webhooks"])
+app.include_router(demo.router, prefix="/api/v1/demo", tags=["Demo"])
 
 @app.get("/")
 def read_root():

@@ -1,0 +1,237 @@
+.patient-simulator {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.simulator-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.phone-mockup {
+  height: 600px;
+  background: var(--bg-panel);
+  border-radius: 40px;
+  border: 4px solid var(--border-color);
+  padding: 1rem;
+  display: flex;
+  justify-content: center;
+  position: relative;
+}
+
+.phone-screen {
+  background: #000;
+  border-radius: 30px;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+.bounce-anim {
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.chat-container {
+  flex-grow: 1;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow-y: auto;
+}
+
+.chat-bubble {
+  max-width: 80%;
+  padding: 0.8rem 1rem;
+  border-radius: 16px;
+  font-size: 0.9rem;
+}
+
+.chat-bubble.ai {
+  background: rgba(59, 130, 246, 0.2);
+  border: 1px solid var(--accent-primary);
+  align-self: flex-start;
+  border-bottom-left-radius: 2px;
+}
+
+.chat-bubble.patient {
+  background: rgba(16, 185, 129, 0.2);
+  border: 1px solid var(--success-green);
+  align-self: flex-end;
+  border-bottom-right-radius: 2px;
+}
+
+.chat-bubble.system {
+  background: rgba(245, 158, 11, 0.2);
+  color: var(--warning-yellow);
+  align-self: center;
+  font-size: 0.8rem;
+  text-align: center;
+  width: 100%;
+}
+
+.input-controls {
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.keypad-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+}
+
+.keypad-grid button {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.keypad-grid button:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.keypad-grid button.critical-btn:hover {
+  background: var(--critical-red);
+  border-color: var(--critical-red);
+}
+
+.system-output {
+  padding: 2rem;
+}
+
+.output-field {
+  margin-bottom: 2rem;
+}
+
+.output-field .label {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.keyword-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tag {
+  background: rgba(139, 92, 246, 0.2);
+  border: 1px solid rgba(139, 92, 246, 0.5);
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+}
+
+.risk-badge {
+  display: inline-block;
+  padding: 0.5rem 1.5rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.risk-badge.normal {
+  background: rgba(16, 185, 129, 0.2);
+  color: var(--success-green);
+  border: 1px solid var(--success-green);
+}
+
+.risk-badge.warning {
+  background: rgba(245, 158, 11, 0.2);
+  color: var(--warning-yellow);
+  border: 1px solid var(--warning-yellow);
+}
+
+.risk-badge.critical {
+  background: rgba(239, 68, 68, 0.2);
+  color: var(--critical-red);
+  border: 1px solid var(--critical-red);
+  animation: pulse-critical 2s infinite;
+}
+
+.action-text {
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  gap: 4px;
+}
+
+.typing-indicator .dot {
+  width: 8px;
+  height: 8px;
+  background-color: var(--accent-primary);
+  border-radius: 50%;
+  animation: typing 1.4s infinite ease-in-out both;
+}
+
+.typing-indicator .dot:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.typing-indicator .dot:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+@keyframes typing {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1); }
+}
+
+.mic-button {
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  width: 100%;
+  padding: 1rem;
+  border-radius: 9999px;
+  border: 1px solid var(--accent-primary);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.2);
+}
+
+.mic-button:hover {
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.mic-button.listening {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: var(--critical-red);
+}
+
+.heartbeat {
+  animation: pulse-mic 1.5s infinite;
+}
+
+@keyframes pulse-mic {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}

@@ -1,14 +1,30 @@
 import datetime
-from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, JSON
+import enum
+from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, JSON, Enum as SQLEnum
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
 from app.database import Base
+
+class Role(str, enum.Enum):
+    ADMIN = "ADMIN"
+    ASHA = "ASHA"
+    PATIENT = "PATIENT"
+
+class User(Base):
+    __tablename__ = "users"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    phone_number = Column(String, unique=True, index=True)
+    role = Column(SQLEnum(Role), default=Role.PATIENT)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
 class Patient(Base):
     __tablename__ = "patients"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    phone_number = Column(String, unique=True, index=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), unique=True)
+    phone_number = Column(String, index=True) # Legacy but kept for sync
     name = Column(String)
     language = Column(String, default="kn-IN") # Default Kannada
     is_active = Column(Boolean, default=True)
@@ -20,7 +36,8 @@ class AshaWorker(Base):
     __tablename__ = "asha_workers"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    phone_number = Column(String, unique=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), unique=True)
+    phone_number = Column(String) # Legacy but kept for sync
     name = Column(String)
     primary_phc = Column(String)
 
