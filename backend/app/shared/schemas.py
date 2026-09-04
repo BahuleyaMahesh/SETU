@@ -44,6 +44,10 @@ class PatientUpdate(BaseModel):
     full_name: Optional[str] = None
     phone: Optional[str] = None
     address: Optional[str] = None
+    village: Optional[str] = None
+    district: Optional[str] = None
+    state: Optional[str] = None
+    pincode: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     risk_level: Optional[str] = None
@@ -53,10 +57,22 @@ class PatientResponse(BaseModel):
     id: str
     mrn: str
     full_name: str
-    gender: Optional[str]
-    phone: Optional[str]
-    risk_level: str
-    created_at: datetime
+    gender: Optional[str] = None
+    phone: Optional[str] = None
+    age: Optional[int] = None
+    address: Optional[str] = None
+    village: Optional[str] = None
+    district: Optional[str] = None
+    state: Optional[str] = None
+    pincode: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    risk_level: Optional[str] = "normal"
+    hospital_id: Optional[str] = None
+    assigned_asha_id: Optional[str] = None
+    asha_worker: Optional[Dict[str, Any]] = None
+    last_checkin: Optional[str] = None
+    created_at: Optional[datetime] = None
 
     class Config:
         orm_mode = True
@@ -195,8 +211,16 @@ class AlertStatusUpdateRequest(BaseModel):
 class AlertResponse(BaseModel):
     id: str
     patient_id: str
+    patient_name: Optional[str] = None
     severity: str
+    risk_level: Optional[str] = None
+    alert_type: Optional[str] = None
     status: str
+    title: Optional[str] = None
+    description: Optional[str] = None
+    triggered_by: Optional[str] = None
+    acknowledged_at: Optional[str] = None
+    resolved_at: Optional[str] = None
     created_at: datetime
 
     class Config:

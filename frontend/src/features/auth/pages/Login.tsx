@@ -118,7 +118,7 @@ export const Login: React.FC = () => {
     <div className="min-h-screen bg-[#f7fafc] flex flex-col lg:flex-row relative overflow-hidden font-sans text-slate-800">
       
       {/* LEFT HERO & LANDING SECTION */}
-      <div className="lg:w-[54%] min-h-[620px] lg:min-h-screen relative flex flex-col justify-between p-6 sm:p-10 lg:p-14 overflow-hidden bg-gradient-to-br from-[#ebf4fa] via-[#e4f0f8] to-[#dceaf4]">
+      <div className="always-light lg:w-[54%] min-h-[620px] lg:min-h-screen relative flex flex-col justify-between p-6 sm:p-10 lg:p-14 overflow-hidden bg-gradient-to-br from-[#ebf4fa] via-[#e4f0f8] to-[#dceaf4]">
         
         {/* Rural Care Background Image - Framed in bottom section exactly as in target design */}
         <div className="absolute inset-x-0 bottom-0 h-[62%] pointer-events-none overflow-hidden">

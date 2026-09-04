@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from ...core.database import get_db
 from ...core.security import get_current_user
 from ...db.models.user import User
 from ...shared.schemas import HospitalResponse
-from ..hospitals.service import get_hospital_service
+from .service import get_hospital_service, HospitalService
 
 router = APIRouter(prefix="/api/v1/hospitals", tags=["hospitals"])
 
@@ -12,7 +14,7 @@ router = APIRouter(prefix="/api/v1/hospitals", tags=["hospitals"])
 @router.get("", response_model=List[HospitalResponse])
 async def list_hospitals(
     current_user: User = Depends(get_current_user),
-    service=Depends(get_hospital_service),
+    service: HospitalService = Depends(get_hospital_service),
 ):
     """List hospitals"""
 
@@ -22,15 +24,15 @@ async def list_hospitals(
             detail="Access denied",
         )
 
-    hospitals = await service.search_hospitals(search_term="", limit=100)
-    return hospitals
+    hospitals = await service.search_hospitals(limit=100)
+    return [h.to_dict() for h in hospitals]
 
 
 @router.get("/{hospital_id}", response_model=HospitalResponse)
 async def get_hospital(
     hospital_id: str,
     current_user: User = Depends(get_current_user),
-    service=Depends(get_hospital_service),
+    service: HospitalService = Depends(get_hospital_service),
 ):
     """Get a hospital by ID"""
     hospital = await service.get_hospital(hospital_id)
@@ -41,14 +43,14 @@ async def get_hospital(
             detail="Hospital not found",
         )
 
-    return hospital
+    return hospital.to_dict()
 
 
 @router.get("/{hospital_id}/patients")
 async def get_hospital_patients(
     hospital_id: str,
     current_user: User = Depends(get_current_user),
-    service=Depends(get_hospital_service),
+    db: AsyncSession = Depends(get_db),
 ):
     """Get patients at a hospital"""
 
@@ -58,18 +60,17 @@ async def get_hospital_patients(
             detail="Access denied",
         )
 
-    from ..patients.service import get_patient_service
-    patient_service = get_patient_service(None)
+    from ..patients.service import PatientService
 
-    patients = await patient_service.get_patients_by_hospital(hospital_id)
-    return [p.to_dict() for p in patients]
+    patient_service = PatientService(db)
+    return await patient_service.get_patients_by_hospital(hospital_id)
 
 
 @router.get("/{hospital_id}/summary")
 async def get_hospital_summary(
     hospital_id: str,
     current_user: User = Depends(get_current_user),
-    service=Depends(get_hospital_service),
+    db: AsyncSession = Depends(get_db),
 ):
     """Get hospital summary"""
 
@@ -79,12 +80,16 @@ async def get_hospital_summary(
             detail="Access denied",
         )
 
-    from ..patients.service import get_patient_service
-    patient_service = get_patient_service(None)
+    from ..analytics.service import AnalyticsService
 
-    patients_by_risk = await patient_service.get_patients_by_hospital_and_risk(hospital_id)
+    analytics_service = AnalyticsService(db)
+    distribution = await analytics_service.get_patient_risk_distribution(hospital_id)
 
     return {
-        "total_patients": sum(len(p) for p in patients_by_risk.values()),
-        "by_risk": {k: len(v) for k, v in patients_by_risk.items()},
+        "total_patients": distribution["total"],
+        "by_risk": {
+            "normal": distribution["normal"],
+            "warning": distribution["warning"],
+            "critical": distribution["critical"],
+        },
     }

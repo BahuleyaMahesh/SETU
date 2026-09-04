@@ -30,6 +30,9 @@ import { HospitalAnalytics } from '../../features/hospital/pages/Analytics';
 import { HospitalReports } from '../../features/hospital/pages/Reports';
 import { HospitalMap } from '../../features/hospital/pages/Map';
 
+// Shared staff chat (ASHA + Hospital)
+import { StaffPatientChat } from '../../features/chat/StaffPatientChat';
+
 import ProtectedRoute from './ProtectedRoute';
 import RoleRoute from './RoleRoute';
 
@@ -75,6 +78,7 @@ export const AppRoutes: React.FC = () => {
                   <Route path="patients/:patientId" element={<AshaPatientDetail />} />
                   <Route path="map" element={<AshaMap />} />
                   <Route path="alerts" element={<AshaAlerts />} />
+                  <Route path="assistant" element={<StaffPatientChat />} />
                   <Route path="*" element={<Navigate to="home" replace />} />
                 </Routes>
               </AshaLayout>
@@ -97,6 +101,7 @@ export const AppRoutes: React.FC = () => {
                   <Route path="analytics" element={<HospitalAnalytics />} />
                   <Route path="reports" element={<HospitalReports />} />
                   <Route path="map" element={<HospitalMap />} />
+                  <Route path="assistant" element={<StaffPatientChat />} />
                   <Route path="*" element={<Navigate to="dashboard" replace />} />
                 </Routes>
               </HospitalLayout>

@@ -42,16 +42,23 @@ class PrescriptionService:
         self.db.add(prescription)
         await self.db.flush()
 
-        # Create medications
+        # Create medications. dosage/frequency are NOT NULL columns, but a
+        # handwritten prescription can have a clearly legible drug name with
+        # an illegible dosage/frequency — default those instead of losing
+        # the whole medication (or the whole prescription, since one bad
+        # insert would otherwise abort the transaction for every entry).
         medication_records = []
         for med in medications:
+            name = (med.get("name") or "").strip()
+            if not name:
+                continue
             medication = Medication(
                 id=uuid.uuid4(),
                 prescription_id=prescription.id,
                 patient_id=uuid.UUID(patient_id),
-                medication_name=med.get("name"),
-                dosage=med.get("dosage"),
-                frequency=med.get("frequency"),
+                medication_name=name,
+                dosage=(med.get("dosage") or "Not specified"),
+                frequency=(med.get("frequency") or "Not specified"),
                 timing=med.get("timing"),
                 duration=med.get("duration"),
                 instructions=med.get("instructions"),
@@ -144,10 +151,18 @@ class PrescriptionService:
 
         medications = []
         is_image = (document.file_type or "").startswith("image/")
+        vision_error = None
 
-        if is_image and self.vision_provider.available():
+        if is_image:
+            if not self.vision_provider.available():
+                return {
+                    "error": "AI prescription reading isn't configured on this server "
+                    "yet (missing Gemini API key). Your image was saved, but medications "
+                    "couldn't be read automatically — please add them manually for now."
+                }
             vision_result = await self.vision_provider.extract_from_image(document.storage_path)
             medications = vision_result.get("medications", [])
+            vision_error = vision_result.get("error")
         elif document.extraction_result and document.extraction_result.get("text"):
             extracted = await self.extraction_service.extract_prescription(
                 document.extraction_result["text"]
@@ -167,7 +182,12 @@ class PrescriptionService:
                 status="verified" if verified_by else "pending",
             )
 
-        return {"error": "No medications extracted from document"}
+        if vision_error == "unparseable_response":
+            return {"error": "The AI reader had trouble with this image. Please try again, or use a clearer, better-lit photo."}
+        return {
+            "error": "No medications could be read from this image. Make sure the "
+            "prescription text is in focus, well-lit, and right-side up, then try again."
+        }
 
     async def get_medication(self, medication_id: str) -> Optional[Dict[str, Any]]:
         """Get medication by ID"""

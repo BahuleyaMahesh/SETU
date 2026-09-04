@@ -70,6 +70,13 @@ export const HospitalDashboard: React.FC = () => {
         </div>
         <div className="flex items-center gap-3">
           <Button
+            onClick={() => navigate('/hospital/patients?add=true')}
+            className="bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-lg shadow-sky-600/20"
+          >
+            <Users className="w-4 h-4" />
+            <span>+ Add / Register Patient</span>
+          </Button>
+          <Button
             onClick={() => navigate('/hospital/alerts')}
             className="bg-red-600 hover:bg-red-500 text-white font-semibold text-xs px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-lg shadow-red-600/20"
           >

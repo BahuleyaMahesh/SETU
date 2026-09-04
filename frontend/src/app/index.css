@@ -89,6 +89,20 @@
   .dark .text-indigo-600, .dark .text-indigo-700, .dark .text-indigo-800 { color: #818cf8; }
   .dark .text-orange-600, .dark .text-orange-700, .dark .text-orange-800 { color: #fb923c; }
   .dark .text-pink-600, .dark .text-pink-700, .dark .text-pink-800 { color: #f472b6; }
+
+  /* Escape hatch: some sections (e.g. Login's photo/hero panel) are
+     deliberately light-themed regardless of app theme and never had
+     dark: variants because they don't need them — but the blanket remap
+     above can't tell that apart from a page that simply forgot dark mode
+     styling. Wrap such a section in .always-light to restore its real
+     light-mode colors even while .dark is active on an ancestor. Extend
+     this list only with classes actually used inside such a section. */
+  .dark .always-light .text-slate-900 { color: #0f172a; }
+  .dark .always-light .text-slate-800 { color: #1e293b; }
+  .dark .always-light .text-slate-700 { color: #334155; }
+  .dark .always-light .text-slate-600 { color: #475569; }
+  .dark .always-light .text-slate-500 { color: #64748b; }
+  .dark .always-light .text-slate-400 { color: #94a3b8; }
 }
 
 /* Smooth transitions */

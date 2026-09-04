@@ -3,7 +3,7 @@ import { Link, useLocation, Outlet } from 'react-router-dom';
 import { AppLogo } from '../../shared/components/AppLogo';
 import { ThemeToggle } from '../../shared/components/ThemeToggle';
 import { useAuth } from '../auth/AuthProvider';
-import { Home, Users, Bell, MapPin, LogOut } from 'lucide-react';
+import { Home, Users, Bell, MapPin, LogOut, Bot } from 'lucide-react';
 
 interface AshaLayoutProps {
   children?: React.ReactNode;
@@ -19,6 +19,7 @@ export const AshaLayout: React.FC<AshaLayoutProps> = ({ children }) => {
     { id: 'patients', path: '/asha/patients', label: 'Patients', icon: Users },
     { id: 'alerts', path: '/asha/alerts', label: 'Alerts', icon: Bell, hasBadge: true },
     { id: 'map', path: '/asha/map', label: 'Field Map', icon: MapPin },
+    { id: 'assistant', path: '/asha/assistant', label: 'Assistant', icon: Bot },
   ];
 
   return (

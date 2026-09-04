@@ -19,6 +19,14 @@ interface PatientMapProps {
   /** Called with (lat, lng) when the map is clicked — used for "click to pin a location" flows. */
   onMapClick?: (lat: number, lng: number) => void;
   className?: string;
+  /** Whether the mouse wheel zooms the map. Off by default: this map is
+   * frequently embedded partway down a taller scrollable page (e.g. the
+   * "Add Patient" form), and if the wheel zooms the map instead of
+   * scrolling the page, the page can appear stuck/unscrollable the moment
+   * the cursor passes over it. The +/- buttons and pinch/double-click zoom
+   * still work either way. Pass true only for a map that's the page's only
+   * scrollable content (a dedicated full-page map view). */
+  scrollZoom?: boolean;
 }
 
 const LIGHT_STYLE = 'https://tiles.openfreemap.org/styles/liberty';
@@ -31,6 +39,7 @@ export const PatientMap: React.FC<PatientMapProps> = ({
   zoom = 10,
   onMapClick,
   className = '',
+  scrollZoom = false,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -54,6 +63,10 @@ export const PatientMap: React.FC<PatientMapProps> = ({
       attributionControl: { compact: true },
     });
     map.addControl(new maplibregl.NavigationControl(), 'top-right');
+
+    if (!scrollZoom) {
+      map.scrollZoom.disable();
+    }
 
     map.on('click', (e) => {
       onMapClickRef.current?.(e.lngLat.lat, e.lngLat.lng);

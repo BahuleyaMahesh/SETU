@@ -286,7 +286,7 @@ export const PatientChat: React.FC = () => {
                 {!isUser && isHealthConcern && (
                   <div className={`p-4 rounded-2xl border transition-all ${
                     isCritical
-                      ? 'bg-red-60 border-red-300 text-red-950 shadow-md shadow-red-500/10 animate-pulse'
+                      ? 'bg-red-50 border-red-300 text-red-950 shadow-md shadow-red-500/10'
                       : 'bg-amber-50/90 border-amber-200 text-amber-950 shadow-sm'
                   }`}>
                     <div className="flex items-center justify-between border-b border-slate-200/60 pb-2 mb-3">

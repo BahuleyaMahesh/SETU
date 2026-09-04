@@ -45,6 +45,28 @@ class AnalyticsService:
             "total_evaluations": len(records),
         }
 
+    async def get_patient_risk_distribution(self, hospital_id: str = None) -> Dict[str, Any]:
+        """Current patient headcount by risk tier (Patient.risk_level as it stands
+        right now), not historical evaluation events like get_risk_analytics()."""
+        stmt = select(Patient)
+        if hospital_id:
+            stmt = stmt.filter(Patient.hospital_id == uuid.UUID(hospital_id))
+
+        result = await self.db.execute(stmt)
+        patients = result.scalars().all()
+
+        counts = {"normal": 0, "warning": 0, "critical": 0}
+        for p in patients:
+            level = p.risk_level or "normal"
+            counts[level] = counts.get(level, 0) + 1
+
+        return {
+            "total": len(patients),
+            "critical": counts["critical"],
+            "warning": counts["warning"],
+            "normal": counts["normal"],
+        }
+
     async def get_checkin_analytics(self, hospital_id: str = None) -> Dict[str, Any]:
         """Get check-in analytics"""
         stmt = select(Checkin)

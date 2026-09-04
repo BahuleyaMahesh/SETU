@@ -88,8 +88,13 @@ async def gemini_generate_from_image(image_path: str, prompt: str) -> Optional[s
         with open(image_path, "rb") as f:
             image_bytes = f.read()
 
-        ext = image_path.rsplit(".", 1)[-1].lower()
-        mime_type = "image/png" if ext == "png" else "image/jpeg"
+        image_mime_types = {
+            "jpg": "image/jpeg", "jpeg": "image/jpeg", "png": "image/png",
+            "webp": "image/webp", "gif": "image/gif", "bmp": "image/bmp",
+            "heic": "image/heic", "heif": "image/heif",
+        }
+        ext = image_path.rsplit(".", 1)[-1].lower() if "." in image_path else ""
+        mime_type = image_mime_types.get(ext, "image/jpeg")
 
         response = client.models.generate_content(
             model=settings.GEMINI_MODEL,

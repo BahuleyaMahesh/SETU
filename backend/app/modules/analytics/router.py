@@ -22,6 +22,18 @@ async def get_risk_analytics(
     )
 
 
+@router.get("/risk-distribution")
+async def get_patient_risk_distribution(
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """Current patient headcount by risk tier, for dashboard KPI cards."""
+    service = AnalyticsService(db)
+    return await service.get_patient_risk_distribution(
+        hospital_id=str(user.hospital_id) if user.role == "hospital" else None
+    )
+
+
 @router.get("/checkins")
 async def get_checkin_analytics(
     db: AsyncSession = Depends(get_db),

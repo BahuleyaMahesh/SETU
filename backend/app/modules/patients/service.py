@@ -62,34 +62,10 @@ class PatientService:
         return patient
 
     async def get_patient(self, patient_id: str) -> Optional[Dict[str, Any]]:
-        """Get patient by ID"""
-        stmt = select(Patient).filter(Patient.id == uuid.UUID(patient_id))
-        result = await self.db.execute(stmt)
-        patient = result.scalar_one_or_none()
-
-        if not patient:
-            return None
-
-        return {
-            "id": str(patient.id),
-            "mrn": patient.mrn,
-            "full_name": patient.full_name,
-            "date_of_birth": patient.date_of_birth.isoformat() if patient.date_of_birth else None,
-            "age": self._calculate_age(patient.date_of_birth) if patient.date_of_birth else None,
-            "gender": patient.gender,
-            "phone": patient.phone,
-            "address": patient.address,
-            "village": patient.village,
-            "district": patient.district,
-            "state": patient.state,
-            "pincode": patient.pincode,
-            "latitude": patient.latitude,
-            "longitude": patient.longitude,
-            "hospital_id": str(patient.hospital_id) if patient.hospital_id else None,
-            "assigned_asha_id": str(patient.assigned_asha_id) if patient.assigned_asha_id else None,
-            "risk_level": patient.risk_level,
-            "created_at": patient.created_at.isoformat(),
-        }
+        """Get patient by ID with full clinical history, combined symptoms, alerts, and risk profile."""
+        from ..clinical.service import ClinicalPipelineService
+        clinical_service = ClinicalPipelineService(self.db)
+        return await clinical_service.get_patient_clinical_profile(patient_id)
 
     async def get_patients(
         self,
@@ -123,6 +99,14 @@ class PatientService:
         result = await self.db.execute(stmt)
         patients = result.scalars().all()
 
+        checkin_ids = [p.last_check_in_id for p in patients if p.last_check_in_id]
+        last_checkin_at = {}
+        if checkin_ids:
+            from ...db.models.checkin import Checkin
+            checkins_stmt = select(Checkin).filter(Checkin.id.in_(checkin_ids))
+            checkins_result = await self.db.execute(checkins_stmt)
+            last_checkin_at = {c.id: c.created_at for c in checkins_result.scalars().all()}
+
         return [
             {
                 "id": str(p.id),
@@ -131,9 +115,21 @@ class PatientService:
                 "age": self._calculate_age(p.date_of_birth) if p.date_of_birth else None,
                 "gender": p.gender,
                 "phone": p.phone,
+                "address": p.address,
                 "village": p.village,
+                "district": p.district,
+                "state": p.state,
+                "pincode": p.pincode,
+                "latitude": p.latitude,
+                "longitude": p.longitude,
                 "risk_level": p.risk_level,
-                "last_checkin": p.last_checkin.isoformat() if p.last_checkin else None,
+                "hospital_id": str(p.hospital_id) if p.hospital_id else None,
+                "assigned_asha_id": str(p.assigned_asha_id) if p.assigned_asha_id else None,
+                "last_checkin": (
+                    last_checkin_at[p.last_check_in_id].isoformat()
+                    if p.last_check_in_id and p.last_check_in_id in last_checkin_at
+                    else None
+                ),
             }
             for p in patients
         ]

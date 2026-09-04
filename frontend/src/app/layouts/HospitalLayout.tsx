@@ -3,7 +3,7 @@ import { Link, useLocation, Outlet } from 'react-router-dom';
 import { AppLogo } from '../../shared/components/AppLogo';
 import { ThemeToggle } from '../../shared/components/ThemeToggle';
 import { useAuth } from '../auth/AuthProvider';
-import { LayoutDashboard, Users, Bell, BarChart3, FileText, MapPin, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, Bell, BarChart3, FileText, MapPin, LogOut, Bot } from 'lucide-react';
 
 interface HospitalLayoutProps {
   children?: React.ReactNode;
@@ -21,6 +21,7 @@ export const HospitalLayout: React.FC<HospitalLayoutProps> = ({ children }) => {
     { id: 'analytics', path: '/hospital/analytics', label: 'Analytics', icon: BarChart3 },
     { id: 'reports', path: '/hospital/reports', label: 'Reports', icon: FileText },
     { id: 'map', path: '/hospital/map', label: 'Hospital Map', icon: MapPin },
+    { id: 'assistant', path: '/hospital/assistant', label: 'Assistant', icon: Bot },
   ];
 
   return (

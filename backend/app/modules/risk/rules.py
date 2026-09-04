@@ -48,12 +48,18 @@ RISK_FACTORS: Dict[str, RiskFactor] = {
     "unconsciousness": RiskFactor("unconsciousness", weight=10, level="critical"),
     "seizure": RiskFactor("seizure", weight=10, level="critical"),
     "stroke_symptoms": RiskFactor("stroke_symptoms", weight=10, level="critical"),
+    "severe_trauma": RiskFactor("severe_trauma", weight=10, level="critical"),
     "severe_pain": RiskFactor("severe_pain", weight=5, level="warning"),
     "high_fever": RiskFactor("high_fever", weight=5, level="critical"),  # >102F
     "fever": RiskFactor("fever", weight=2, level="warning"),
     "dehydration": RiskFactor("dehydration", weight=5, level="warning"),
     "vomiting": RiskFactor("vomiting", weight=1, level="normal"),
     "diarrhea": RiskFactor("diarrhea", weight=1, level="normal"),
+    "weakness": RiskFactor("weakness", weight=3, level="warning"),
+    "dizziness": RiskFactor("dizziness", weight=3, level="warning"),
+    "fatigue": RiskFactor("fatigue", weight=1, level="normal"),
+    "headache": RiskFactor("headache", weight=2, level="warning"),
+    "cough": RiskFactor("cough", weight=1, level="normal"),
     # High-risk patient factors
     "age_over_60": RiskFactor("age_over_60", weight=5, level="warning"),
     "age_under_1": RiskFactor("age_under_1", weight=5, level="warning"),
@@ -88,7 +94,7 @@ def evaluate_risk(symptoms: List[str], patient_age: Optional[int] = None,
 
     # Check for critical symptoms first (these trigger immediate critical level)
     critical_symptoms = ["breathing_difficulty", "chest_pain", "bleeding",
-                        "unconsciousness", "seizure", "stroke_symptoms"]
+                        "unconsciousness", "seizure", "stroke_symptoms", "severe_trauma"]
 
     has_critical_symptom = False
     for symptom in symptoms:
@@ -175,7 +181,7 @@ def is_risk_elevated(evaluation: RiskEvaluation, target_level: RiskLevel) -> boo
 def get_critical_symptoms() -> List[str]:
     """Get list of critical symptoms that require immediate attention"""
     return ["breathing_difficulty", "chest_pain", "bleeding",
-            "unconsciousness", "seizure", "stroke_symptoms"]
+            "unconsciousness", "seizure", "stroke_symptoms", "severe_trauma"]
 
 
 def get_high_risk_patient_conditions() -> List[str]:

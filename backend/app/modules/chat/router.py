@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 from ...core.database import get_db
 from .service import ChatService
-from ...core.security import get_current_user
+from ...core.security import get_current_user, authorize_patient_access
 from ...db.models.user import User
 
 
@@ -17,6 +17,13 @@ class ChatMessageInput(BaseModel):
     content: Optional[str] = None
     conversation_id: Optional[str] = None
     role: Optional[str] = "user"
+
+
+class StaffChatMessageInput(BaseModel):
+    patient_id: str
+    message: Optional[str] = None
+    content: Optional[str] = None
+    conversation_id: Optional[str] = None
 
 
 @router.post("/conversation", response_model=dict)
@@ -48,6 +55,35 @@ async def send_message(
         raise HTTPException(status_code=400, detail="Message content cannot be empty")
 
     return await service.process_patient_message(user=user, user_message=user_text, conversation_id=conv_id)
+
+
+@router.post("/staff-message", response_model=dict)
+async def send_staff_message(
+    payload: StaffChatMessageInput,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """ASHA/hospital care-assistant chat about a specific patient — same
+    safety rules and real clinical pipeline as the patient's own chat."""
+    if user.role not in ("asha", "hospital", "admin"):
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    await authorize_patient_access(payload.patient_id, user, db)
+
+    user_text = payload.content or payload.message or ""
+    if not user_text.strip():
+        raise HTTPException(status_code=400, detail="Message content cannot be empty")
+
+    service = ChatService(db)
+    result = await service.process_staff_message(
+        user=user,
+        patient_id=payload.patient_id,
+        user_message=user_text,
+        conversation_id=payload.conversation_id,
+    )
+    if result.get("error"):
+        raise HTTPException(status_code=404, detail=result["error"])
+    return result
 
 
 @router.get("/conversation/{conversation_id}", response_model=list[dict])

@@ -136,19 +136,36 @@ export const PatientHome: React.FC = () => {
           <UserCheck className="w-5 h-5 text-teal-600" />
           <span>Assigned ASHA Field Worker</span>
         </h3>
-        <div className="flex items-center gap-4 bg-teal-50/60 dark:bg-teal-950/40 border border-teal-200/60 dark:border-teal-800/40 p-4 rounded-xl">
-          <div className="w-12 h-12 bg-teal-600 text-white font-bold rounded-xl flex items-center justify-center text-lg shadow-sm">
-            {healthData?.asha_worker?.full_name?.[0] || 'A'}
+        {healthData?.asha_worker ? (
+          <div className="flex items-center justify-between bg-teal-50/60 dark:bg-teal-950/40 border border-teal-200/60 dark:border-teal-800/40 p-4 rounded-xl">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-teal-600 text-white font-bold rounded-xl flex items-center justify-center text-lg shadow-sm">
+                {healthData.asha_worker.full_name?.[0] || 'A'}
+              </div>
+              <div>
+                <p className="font-semibold text-slate-900">
+                  {healthData.asha_worker.full_name}
+                </p>
+                <p className="text-xs text-teal-700 mt-0.5">
+                  District: {healthData.asha_worker.district || 'Mandya'}
+                </p>
+              </div>
+            </div>
+            {healthData.asha_worker.phone && (
+              <a
+                href={`tel:${healthData.asha_worker.phone}`}
+                className="flex items-center gap-2 px-3 py-2 bg-teal-600 hover:bg-teal-500 text-white rounded-lg font-medium text-xs shadow-sm transition-colors"
+              >
+                <Phone className="w-3.5 h-3.5" />
+                <span>{healthData.asha_worker.phone}</span>
+              </a>
+            )}
           </div>
-          <div>
-            <p className="font-semibold text-slate-900">
-              {healthData?.asha_worker?.full_name || 'Priya Sharma (ASHA)'}
-            </p>
-            <p className="text-xs text-teal-700 mt-0.5">
-              Available for emergency triage & field support
-            </p>
+        ) : (
+          <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl text-slate-500 text-sm">
+            No ASHA worker currently assigned to your care profile.
           </div>
-        </div>
+        )}
       </Card>
 
       {/* Nearby Hospitals */}

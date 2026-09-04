@@ -43,11 +43,24 @@ async def create_checkin(
     if not target_patient_id:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Patient ID required")
 
-    return await service.create_checkin(
+    reporter = "asha" if user.role == "asha" else "patient"
+    raw_text = ""
+    explicit_syms = None
+    if isinstance(request.responses, dict):
+        raw_text = request.responses.get("raw_text") or request.responses.get("text") or request.responses.get("notes") or str(request.responses)
+        explicit_syms = request.responses.get("symptoms")
+    elif isinstance(request.responses, str):
+        raw_text = request.responses
+
+    from ..clinical.service import ClinicalPipelineService
+    clinical_service = ClinicalPipelineService(db)
+    return await clinical_service.process_clinical_input(
         patient_id=target_patient_id,
+        reporter=reporter,
+        input_text=raw_text,
+        explicit_symptoms=explicit_syms,
+        asha_worker_id=str(user.asha_worker_id) if getattr(user, "asha_worker_id", None) else None,
         method=request.method,
-        input_type=request.input_type,
-        responses=request.responses,
     )
 
 

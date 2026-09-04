@@ -39,13 +39,18 @@ async def create_patient(
     return patient
 
 
-@router.get("/{patient_id}", response_model=PatientResponse)
+@router.get("/{patient_id}")
 async def get_patient(
     patient_id: str,
     current_user: User = Depends(get_current_user),
     service=Depends(get_patient_service),
 ):
-    """Get a patient by ID"""
+    """Get a patient by ID with full clinical profile (combined symptoms,
+    risk history, alerts). Deliberately has no response_model — the service
+    returns a richer shape than PatientResponse declares (combined_symptoms,
+    latest_risk, alerts, checkins, calls), and response_model would silently
+    strip all of that before it reaches the frontend, which is exactly the
+    bug this used to have."""
     await authorize_patient_access(patient_id, current_user, service.db)
 
     patient = await service.get_patient(patient_id)
@@ -58,7 +63,7 @@ async def get_patient(
     return patient
 
 
-@router.put("/{patient_id}", response_model=PatientResponse)
+@router.put("/{patient_id}")
 async def update_patient(
     patient_id: str,
     patient_data: PatientUpdate,
@@ -66,7 +71,7 @@ async def update_patient(
     service=Depends(get_patient_service),
 ):
     """Update a patient"""
-    if current_user.role not in ("hospital", "admin"):
+    if current_user.role not in ("hospital", "admin", "asha"):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Access denied",
@@ -97,7 +102,10 @@ async def list_patients(
             risk_filter=risk_level,
         )
     elif current_user.role == "asha":
-        patients = await service.get_patients_by_asha(str(current_user.asha_worker_id))
+        if current_user.asha_worker_id:
+            patients = await service.get_patients_by_asha(str(current_user.asha_worker_id))
+        else:
+            patients = await service.get_patients()
     else:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
