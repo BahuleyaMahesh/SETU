@@ -4,11 +4,15 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
+
+  base: '/SETU/',
+
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
   },
+
   server: {
     proxy: {
       '/api': {
@@ -17,6 +21,7 @@ export default defineConfig({
       },
     },
   },
+
   // maplibre-gl ships its tile-processing code as a Web Worker (.mjs).
   // Vite's dependency pre-bundler mangles that worker's module exports,
   // so it silently fails to load and tiles never render (markers/attribution
@@ -25,6 +30,7 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['maplibre-gl'],
   },
+
   worker: {
     format: 'es',
   },
