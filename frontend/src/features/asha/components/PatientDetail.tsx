@@ -25,6 +25,26 @@ interface Patient {
     phone?: string;
     district?: string;
   };
+  combined_symptoms?: Array<{
+    symptom_key: string;
+    symptom_name: string;
+    observations?: Array<{ reporter: string; timestamp: string; original_wording: string }>;
+  }>;
+  latest_risk?: {
+    risk_level?: string;
+    risk_score?: number;
+    risk_reasons?: string[];
+    risk_factors?: string[];
+    action_required?: string | null;
+  } | null;
+  alerts?: Array<{
+    id: string;
+    title: string;
+    description?: string;
+    status: string;
+    severity: string;
+    created_at: string;
+  }>;
 }
 
 export const PatientDetail: React.FC<PatientDetailProps> = ({ patientId }) => {

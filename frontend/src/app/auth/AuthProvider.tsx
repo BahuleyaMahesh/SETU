@@ -6,6 +6,7 @@ interface User {
   email: string;
   full_name: string;
   role: string;
+  phone?: string;
   hospital_id?: string;
   asha_worker_id?: string;
   patient_id?: string;

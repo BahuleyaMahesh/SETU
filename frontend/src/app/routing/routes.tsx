@@ -24,7 +24,7 @@ import { AshaAlerts } from '../../features/asha/pages/Alerts';
 // Hospital pages
 import { HospitalLayout } from '../layouts/HospitalLayout';
 import { HospitalDashboard } from '../../features/hospital/pages/Dashboard';
-import { HospitalPatients } from '../../features/hospital/pages/Patients';
+import { HospitalPatients, HospitalPatientDetail } from '../../features/hospital/pages/Patients';
 import { HospitalAlertQueue } from '../../features/hospital/pages/AlertQueue';
 import { HospitalAnalytics } from '../../features/hospital/pages/Analytics';
 import { HospitalReports } from '../../features/hospital/pages/Reports';
@@ -97,6 +97,7 @@ export const AppRoutes: React.FC = () => {
                 <Routes>
                   <Route path="dashboard" element={<HospitalDashboard />} />
                   <Route path="patients" element={<HospitalPatients />} />
+                  <Route path="patients/:id" element={<HospitalPatientDetail />} />
                   <Route path="alerts" element={<HospitalAlertQueue />} />
                   <Route path="analytics" element={<HospitalAnalytics />} />
                   <Route path="reports" element={<HospitalReports />} />
