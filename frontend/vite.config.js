@@ -7,11 +7,15 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   plugins: [react()],
+
+  base: '/SETU/',
+
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
   },
+
   server: {
     proxy: {
       '/api': {
@@ -19,5 +23,13 @@ export default defineConfig({
         changeOrigin: true,
       },
     },
+  },
+
+  optimizeDeps: {
+    exclude: ['maplibre-gl'],
+  },
+
+  worker: {
+    format: 'es',
   },
 });
