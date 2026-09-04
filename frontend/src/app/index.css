@@ -1,0 +1,97 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900 font-sans antialiased min-h-screen transition-colors duration-200 dark:bg-slate-950 dark:text-slate-100;
+  }
+
+  /* Bare <select>/<input>/<textarea> with no explicit bg-* class still get
+     the browser's native white background, while the dark text color they
+     inherit from an ancestor makes them unreadable. Give them a sane dark
+     surface unless a component already sets its own background (Input,
+     Login's inputs) — those keep winning via the layer rule below. */
+  .dark select,
+  .dark input:not([type="checkbox"]):not([type="radio"]),
+  .dark textarea {
+    background-color: #1e293b; /* slate-800 */
+    color: #f1f5f9; /* slate-100 */
+    border-color: #334155; /* slate-700 */
+  }
+
+  /*
+   * Dark-mode safety net.
+   *
+   * Most feature pages hardcode light-mode-only Tailwind utilities
+   * (bg-white, bg-gray-50, text-gray-500, etc.) with no dark: variant.
+   * Text inside them has no explicit color, so it inherits the light
+   * dark:text-slate-100 set on page-level ancestors — invisible white-on-
+   * white. These rules remap the common light utilities to dark-safe
+   * equivalents whenever .dark is active.
+   *
+   * Specificity note: this lives in @layer base, and Tailwind's own
+   * dark: utilities live in @layer utilities, which always wins — so any
+   * component that already has explicit dark: classes (Card, Button,
+   * Input, the layouts) is untouched by this and takes precedence.
+   */
+  /* Plain CSS values (not @apply) — chained @apply remaps here trigger
+     false-positive "circular dependency" errors in Tailwind's build. */
+  .dark .bg-white,
+  .dark .bg-gray-50,
+  .dark .bg-gray-100,
+  .dark .bg-slate-50,
+  .dark .bg-slate-100 {
+    background-color: #1e293b; /* slate-800 */
+    color: #f1f5f9; /* slate-100 */
+  }
+
+  .dark .bg-red-50, .dark .bg-red-100 { background-color: #450a0a; color: #f1f5f9; }
+  .dark .bg-green-50, .dark .bg-green-100 { background-color: #052e16; color: #f1f5f9; }
+  .dark .bg-yellow-50, .dark .bg-yellow-100 { background-color: #422006; color: #f1f5f9; }
+  .dark .bg-blue-50, .dark .bg-blue-100 { background-color: #172554; color: #f1f5f9; }
+  .dark .bg-emerald-50, .dark .bg-emerald-100 { background-color: #022c22; color: #f1f5f9; }
+  .dark .bg-sky-50, .dark .bg-sky-100 { background-color: #082f49; color: #f1f5f9; }
+  .dark .bg-teal-50, .dark .bg-teal-100 { background-color: #042f2e; color: #f1f5f9; }
+  .dark .bg-purple-50, .dark .bg-purple-100 { background-color: #3b0764; color: #f1f5f9; }
+  .dark .bg-indigo-50, .dark .bg-indigo-100 { background-color: #1e1b4b; color: #f1f5f9; }
+  .dark .bg-orange-50, .dark .bg-orange-100 { background-color: #431407; color: #f1f5f9; }
+  .dark .bg-pink-50, .dark .bg-pink-100 { background-color: #500724; color: #f1f5f9; }
+
+  /* Borders: light borders read as near-invisible hairlines on dark surfaces */
+  .dark .border-gray-100,
+  .dark .border-gray-200,
+  .dark .border-gray-300,
+  .dark .border-slate-100,
+  .dark .border-slate-200,
+  .dark .border-slate-300 {
+    border-color: #334155; /* slate-700 */
+  }
+
+  /* Neutral text: light-mode grays are too dim (or invisible) on dark surfaces */
+  .dark .text-gray-400, .dark .text-slate-400 { color: #64748b; } /* slate-500 */
+  .dark .text-gray-500, .dark .text-slate-500 { color: #94a3b8; } /* slate-400 */
+  .dark .text-gray-600, .dark .text-slate-600 { color: #cbd5e1; } /* slate-300 */
+  .dark .text-gray-700, .dark .text-slate-700 { color: #cbd5e1; } /* slate-300 */
+  .dark .text-gray-800, .dark .text-slate-800 { color: #e2e8f0; } /* slate-200 */
+  .dark .text-gray-900, .dark .text-slate-900 { color: #f1f5f9; } /* slate-100 */
+
+  /* Status/accent text: -600/-700/-800 shades are tuned for white backgrounds
+     and lose contrast on dark surfaces — lighten to their -400 equivalent. */
+  .dark .text-red-600, .dark .text-red-700, .dark .text-red-800 { color: #f87171; }
+  .dark .text-green-600, .dark .text-green-700, .dark .text-green-800 { color: #4ade80; }
+  .dark .text-yellow-600, .dark .text-yellow-700, .dark .text-yellow-800 { color: #facc15; }
+  .dark .text-blue-600, .dark .text-blue-700, .dark .text-blue-800 { color: #60a5fa; }
+  .dark .text-emerald-600, .dark .text-emerald-700, .dark .text-emerald-800 { color: #34d399; }
+  .dark .text-sky-600, .dark .text-sky-700, .dark .text-sky-800 { color: #38bdf8; }
+  .dark .text-teal-600, .dark .text-teal-700, .dark .text-teal-800 { color: #2dd4bf; }
+  .dark .text-purple-600, .dark .text-purple-700, .dark .text-purple-800 { color: #c084fc; }
+  .dark .text-indigo-600, .dark .text-indigo-700, .dark .text-indigo-800 { color: #818cf8; }
+  .dark .text-orange-600, .dark .text-orange-700, .dark .text-orange-800 { color: #fb923c; }
+  .dark .text-pink-600, .dark .text-pink-700, .dark .text-pink-800 { color: #f472b6; }
+}
+
+/* Smooth transitions */
+.transition-all-200 {
+  transition: all 0.2s ease-in-out;
+}

@@ -1,0 +1,51 @@
+# Dependencies
+node_modules/
+.venv/
+venv/
+env/
+ENV/
+
+# Build outputs
+dist/
+build/
+*.egg-info/
+
+# Python caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Databases & Logs
+*.db
+*.sqlite
+*.sqlite3
+*.log
+logs/
+
+# User-uploaded runtime files (documents, prescription photos, etc.)
+backend/uploads/
+
+# Unrelated third-party source dump (self-hosting Nominatim was evaluated
+# and dropped in favor of the public API — see HANDOVER.md). Not part of
+# the app; 25MB+ of someone else's codebase, doesn't belong in this repo.
+/Nominatim-5.3.2/
+
+# Tool-local state, not project config
+.qodo/
+
+# Ad-hoc local scratch script with a hardcoded DB password — never commit
+/test_pg.py
+
+# IDE / System
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
