@@ -66,7 +66,7 @@ async def update_patient(
     service=Depends(get_patient_service),
 ):
     """Update a patient"""
-    if current_user.role not in ("hospital", "admin"):
+    if current_user.role not in ("hospital", "admin", "asha"):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Access denied",
@@ -97,7 +97,10 @@ async def list_patients(
             risk_filter=risk_level,
         )
     elif current_user.role == "asha":
-        patients = await service.get_patients_by_asha(str(current_user.asha_worker_id))
+        if current_user.asha_worker_id:
+            patients = await service.get_patients_by_asha(str(current_user.asha_worker_id))
+        else:
+            patients = await service.get_patients()
     else:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

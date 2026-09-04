@@ -2,9 +2,11 @@ from datetime import datetime
 from typing import Optional, Dict, Any, List
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy import or_
 import uuid
 
 from ...db.models.alert import Alert, AlertStatus
+from ...db.models.patient import Patient as PatientModel
 from ...db.models.escalation import Escalation
 from ...core.config import settings
 from ..notifications.service import NotificationService
@@ -26,6 +28,8 @@ class AlertService:
         risk_level: str = None,
         alert_type: str = "symptom_alert",
         triggered_by: str = "manual",
+        hospital_id: Optional[str] = None,
+        asha_worker_id: Optional[str] = None,
         metadata: Dict = None,
     ) -> Alert:
         """Create new alert"""
@@ -37,6 +41,8 @@ class AlertService:
         alert = Alert(
             id=uuid.uuid4(),
             patient_id=uuid.UUID(patient_id),
+            hospital_id=uuid.UUID(hospital_id) if hospital_id else None,
+            asha_worker_id=uuid.UUID(asha_worker_id) if asha_worker_id else None,
             severity=severity,
             risk_level=risk_level,
             alert_type=alert_type,
@@ -61,17 +67,37 @@ class AlertService:
         limit: int = 50,
         offset: int = 0,
     ) -> List[Dict[str, Any]]:
-        """Get alerts with filters"""
-        stmt = select(Alert)
+        """Get alerts with filters. Joins Patient for full_name."""
+        stmt = select(Alert, PatientModel.full_name.label("patient_name")).outerjoin(
+            PatientModel, Alert.patient_id == PatientModel.id
+        )
 
         if alert_id:
-            stmt = stmt.filter(Alert.id == uuid.UUID(alert_id))
+            try:
+                stmt = stmt.filter(Alert.id == uuid.UUID(alert_id))
+            except Exception:
+                pass
         if patient_id:
-            stmt = stmt.filter(Alert.patient_id == uuid.UUID(patient_id))
+            try:
+                stmt = stmt.filter(Alert.patient_id == uuid.UUID(str(patient_id)))
+            except Exception:
+                pass
         if hospital_id:
-            stmt = stmt.filter(Alert.hospital_id == uuid.UUID(hospital_id))
+            try:
+                stmt = stmt.filter(Alert.hospital_id == uuid.UUID(hospital_id))
+            except Exception:
+                pass
         if asha_worker_id:
-            stmt = stmt.filter(Alert.asha_worker_id == uuid.UUID(asha_worker_id))
+            try:
+                asha_uuid = uuid.UUID(asha_worker_id)
+                stmt = stmt.filter(
+                    or_(
+                        Alert.asha_worker_id == asha_uuid,
+                        PatientModel.assigned_asha_id == asha_uuid,
+                    )
+                )
+            except Exception:
+                pass
         if status:
             stmt = stmt.filter(Alert.status == status)
         if severity:
@@ -80,21 +106,25 @@ class AlertService:
         stmt = stmt.order_by(Alert.created_at.desc()).offset(offset).limit(limit)
 
         result = await self.db.execute(stmt)
-        alerts = result.scalars().all()
+        rows = result.all()
 
         return [
             {
-                "id": str(a.id),
-                "patient_id": str(a.patient_id),
-                "severity": a.severity,
-                "status": a.status,
-                "title": a.title,
-                "description": a.description,
-                "triggered_by": (a.alert_metadata or {}).get("triggered_by"),
-                "acknowledged_at": a.acknowledged_at.isoformat() if a.acknowledged_at else None,
-                "created_at": a.created_at.isoformat(),
+                "id": str(row.Alert.id),
+                "patient_id": str(row.Alert.patient_id),
+                "patient_name": row.patient_name or "Unknown Patient",
+                "severity": row.Alert.severity,
+                "risk_level": getattr(row.Alert, 'risk_level', None),
+                "alert_type": getattr(row.Alert, 'alert_type', 'symptom_alert'),
+                "status": row.Alert.status,
+                "title": row.Alert.title,
+                "description": row.Alert.description,
+                "triggered_by": (row.Alert.alert_metadata or {}).get("triggered_by"),
+                "acknowledged_at": row.Alert.acknowledged_at.isoformat() if row.Alert.acknowledged_at else None,
+                "resolved_at": row.Alert.resolved_at.isoformat() if row.Alert.resolved_at else None,
+                "created_at": row.Alert.created_at.isoformat(),
             }
-            for a in alerts
+            for row in rows
         ]
 
     async def acknowledge_alert(self, alert_id: str, user_id: str) -> Dict[str, Any]:

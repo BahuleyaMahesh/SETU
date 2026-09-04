@@ -1,102 +1,235 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../../app/auth/AuthProvider';
 import { Card, CardHeader, CardContent } from '../../../shared/components/Card';
 import { Badge } from '../../../shared/components/Badge';
 import { Button } from '../../../shared/components/Button';
+import { Bell, CheckCircle, AlertTriangle, ShieldAlert, RefreshCw } from 'lucide-react';
+
+interface AlertItem {
+  id: string;
+  patient_id: string;
+  patient_name?: string;
+  severity: string;
+  risk_level?: string;
+  status: string;
+  title: string;
+  description: string;
+  triggered_by?: string;
+  created_at: string;
+}
 
 export const AshaAlerts: React.FC = () => {
-  const [alerts, setAlerts] = useState([
-    {
-      id: '1',
-      patientName: 'Ramesh Kumar',
-      severity: 'high',
-      status: 'new',
-      title: 'Critical symptoms detected',
-      description: 'Breathing difficulty and chest pain reported',
-      createdAt: '2024-01-15 10:30',
-    },
-  ]);
+  const { token } = useAuth();
+  const [alerts, setAlerts] = useState<AlertItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState<{ [id: string]: boolean }>({});
+  const [filter, setFilter] = useState<'active' | 'new' | 'acknowledged' | 'resolved' | 'all'>('active');
 
-  const [loading, setLoading] = useState(false);
-
-  const handleAcknowledge = async (id: string) => {
+  const fetchAlerts = async () => {
     setLoading(true);
     try {
-      await fetch(`/api/v1/alerts/${id}/acknowledge`, { method: 'PATCH' });
-      setAlerts(prev => prev.map(a => a.id === id ? { ...a, status: 'acknowledged' } : a));
+      const response = await fetch('/api/v1/alerts', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setAlerts(data);
+      }
+    } catch (error) {
+      console.error('Error fetching alerts:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (token) {
+      fetchAlerts();
+    }
+  }, [token]);
+
+  const handleAcknowledge = async (id: string) => {
+    setActionLoading(prev => ({ ...prev, [id]: true }));
+    try {
+      const res = await fetch(`/api/v1/alerts/${id}/acknowledge`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        setAlerts(prev => prev.map(a => (a.id === id ? { ...a, status: 'acknowledged' } : a)));
+      }
     } catch (error) {
       console.error('Error acknowledging alert:', error);
+    } finally {
+      setActionLoading(prev => ({ ...prev, [id]: false }));
     }
-    setLoading(false);
   };
 
   const handleResolve = async (id: string) => {
-    setLoading(true);
+    setActionLoading(prev => ({ ...prev, [id]: true }));
     try {
-      await fetch(`/api/v1/alerts/${id}/resolve`, { method: 'PATCH' });
-      setAlerts(prev => prev.map(a => a.id === id ? { ...a, status: 'resolved' } : a));
+      const res = await fetch(`/api/v1/alerts/${id}/resolve`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        setAlerts(prev => prev.map(a => (a.id === id ? { ...a, status: 'resolved' } : a)));
+      }
     } catch (error) {
       console.error('Error resolving alert:', error);
+    } finally {
+      setActionLoading(prev => ({ ...prev, [id]: false }));
     }
-    setLoading(false);
   };
 
-  const handleEscalate = async (id: string) => {
-    setLoading(true);
-    try {
-      await fetch(`/api/v1/escalations`, { method: 'POST' });
-      setAlerts(prev => prev.map(a => a.id === id ? { ...a, status: 'escalated' } : a));
-    } catch (error) {
-      console.error('Error escalating alert:', error);
-    }
-    setLoading(false);
-  };
+  const filteredAlerts = alerts.filter(a => {
+    if (filter === 'active') return a.status !== 'resolved';
+    if (filter === 'new') return a.status === 'new';
+    if (filter === 'acknowledged') return a.status === 'acknowledged';
+    if (filter === 'resolved') return a.status === 'resolved';
+    return true;
+  });
+
+  const newCount = alerts.filter(a => a.status === 'new').length;
 
   return (
-    <div className="p-4 space-y-4">
-      <div className="flex justify-between items-center">
-        <h1 className="text-xl font-semibold">Alerts</h1>
-        <Badge variant="danger">{alerts.filter(a => a.status === 'new').length} New</Badge>
+    <div className="p-4 space-y-4 max-w-5xl mx-auto">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-4">
+        <div>
+          <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+            <Bell className="w-6 h-6 text-teal-600" />
+            <span>Clinical Alerts Management</span>
+          </h1>
+          <p className="text-xs text-slate-500 mt-0.5">Real-time alerts generated by Clinical Risk Engine</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Badge variant="danger" className="px-3 py-1 text-xs">
+            {newCount} New Alert{newCount === 1 ? '' : 's'}
+          </Badge>
+          <Button variant="outline" size="sm" onClick={fetchAlerts} disabled={loading} className="gap-1.5">
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        </div>
       </div>
 
-      <div className="grid gap-4">
-        {alerts.map((alert) => (
-          <Card key={alert.id}>
-            <CardHeader>
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="font-medium">{alert.title}</h3>
-                  <p className="text-sm text-gray-500">{alert.patientName}</p>
+      {/* Filter Tabs */}
+      <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl w-fit text-xs font-semibold text-slate-600">
+        <button
+          onClick={() => setFilter('active')}
+          className={`px-3 py-1.5 rounded-lg transition-all ${filter === 'active' ? 'bg-white text-slate-900 shadow-sm font-bold' : 'hover:text-slate-900'}`}
+        >
+          Active ({alerts.filter(a => a.status !== 'resolved').length})
+        </button>
+        <button
+          onClick={() => setFilter('new')}
+          className={`px-3 py-1.5 rounded-lg transition-all ${filter === 'new' ? 'bg-white text-slate-900 shadow-sm font-bold' : 'hover:text-slate-900'}`}
+        >
+          New ({newCount})
+        </button>
+        <button
+          onClick={() => setFilter('acknowledged')}
+          className={`px-3 py-1.5 rounded-lg transition-all ${filter === 'acknowledged' ? 'bg-white text-slate-900 shadow-sm font-bold' : 'hover:text-slate-900'}`}
+        >
+          Acknowledged ({alerts.filter(a => a.status === 'acknowledged').length})
+        </button>
+        <button
+          onClick={() => setFilter('resolved')}
+          className={`px-3 py-1.5 rounded-lg transition-all ${filter === 'resolved' ? 'bg-white text-slate-900 shadow-sm font-bold' : 'hover:text-slate-900'}`}
+        >
+          Resolved ({alerts.filter(a => a.status === 'resolved').length})
+        </button>
+        <button
+          onClick={() => setFilter('all')}
+          className={`px-3 py-1.5 rounded-lg transition-all ${filter === 'all' ? 'bg-white text-slate-900 shadow-sm font-bold' : 'hover:text-slate-900'}`}
+        >
+          All ({alerts.length})
+        </button>
+      </div>
+
+      {/* Alerts List */}
+      {loading ? (
+        <div className="flex justify-center items-center py-16">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600" />
+        </div>
+      ) : filteredAlerts.length === 0 ? (
+        <Card className="p-8 text-center bg-slate-50 border border-slate-200">
+          <CheckCircle className="w-10 h-10 text-emerald-500 mx-auto mb-2" />
+          <p className="font-bold text-slate-800">No {filter} alerts found</p>
+          <p className="text-xs text-slate-500 mt-1">All patient alerts in this view have been processed.</p>
+        </Card>
+      ) : (
+        <div className="grid gap-4">
+          {filteredAlerts.map((alert) => {
+            const isCritical = alert.severity === 'critical' || alert.severity === 'high';
+            const isBusy = actionLoading[alert.id];
+
+            return (
+              <Card key={alert.id} className={`p-5 transition-all border ${
+                alert.status === 'resolved' ? 'opacity-60 bg-slate-50 border-slate-200' :
+                isCritical ? 'border-red-200 bg-red-50/40' : 'border-amber-200 bg-amber-50/30'
+              }`}>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3 mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className={`p-2 rounded-xl text-white ${isCritical ? 'bg-red-600' : 'bg-amber-500'}`}>
+                      <AlertTriangle className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-slate-900 text-base">{alert.title || 'Clinical Alert'}</h3>
+                      <p className="text-xs text-slate-600 font-medium">
+                        Patient: <span className="font-bold text-slate-900">{alert.patient_name}</span>
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={isCritical ? 'danger' : 'warning'}>
+                      {alert.severity.toUpperCase()}
+                    </Badge>
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+                      alert.status === 'resolved' ? 'bg-emerald-100 text-emerald-800' :
+                      alert.status === 'acknowledged' ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800'
+                    }`}>
+                      {alert.status}
+                    </span>
+                  </div>
                 </div>
-                <Badge variant={alert.severity === 'high' ? 'danger' : 'warning'}>
-                  {alert.severity}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="mb-3">
-                <p className="text-sm text-gray-700">{alert.description}</p>
-                <span className="text-xs text-gray-500 mt-1 block">{alert.createdAt}</span>
-              </div>
 
-              <div className="flex gap-2">
-                {alert.status === 'new' && (
-                  <Button size="sm" onClick={() => handleAcknowledge(alert.id)} disabled={loading}>
-                    Acknowledge
-                  </Button>
-                )}
-                <Button size="sm" variant="outline" onClick={() => handleEscalate(alert.id)} disabled={loading}>
-                  Escalate
-                </Button>
-                {alert.status !== 'resolved' && (
-                  <Button size="sm" variant="success" onClick={() => handleResolve(alert.id)} disabled={loading}>
-                    Resolve
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+                <p className="text-sm text-slate-700 font-medium mb-3">{alert.description}</p>
+
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+                  <span className="text-xs text-slate-400 font-medium">
+                    Triggered: {new Date(alert.created_at).toLocaleString()}
+                  </span>
+
+                  <div className="flex items-center gap-2">
+                    {alert.status === 'new' && (
+                      <Button
+                        size="sm"
+                        onClick={() => handleAcknowledge(alert.id)}
+                        disabled={isBusy}
+                        className="bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs"
+                      >
+                        {isBusy ? 'Processing...' : 'Acknowledge Alert'}
+                      </Button>
+                    )}
+                    {alert.status !== 'resolved' && (
+                      <Button
+                        size="sm"
+                        variant="success"
+                        onClick={() => handleResolve(alert.id)}
+                        disabled={isBusy}
+                        className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs"
+                      >
+                        {isBusy ? 'Processing...' : 'Resolve Alert'}
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };

@@ -18,13 +18,10 @@ export const AshaHome: React.FC = () => {
   }, [token, user?.asha_worker_id]);
 
   const fetchData = async () => {
-    if (!user?.asha_worker_id) {
-      setLoading(false);
-      return;
-    }
     try {
+      const ashaId = user?.asha_worker_id || 'me';
       const [caseloadRes, alertsRes] = await Promise.all([
-        fetch(`/api/v1/asha/${user.asha_worker_id}/caseload`, {
+        fetch(`/api/v1/asha/${ashaId}/caseload`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
         fetch(`/api/v1/alerts?status=new`, {
@@ -63,16 +60,23 @@ export const AshaHome: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Field Worker Header */}
-      <div className="bg-gradient-to-r from-teal-700 to-emerald-700 text-white rounded-2xl p-6 shadow-md">
-        <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">
-              Field Overview: {user?.full_name || 'ASHA Worker'}
-            </h1>
-            <p className="text-teal-100 text-sm mt-1">
-              Monitoring active post-discharge patients in assigned rural block.
-            </p>
-          </div>
+      <div className="bg-gradient-to-r from-teal-700 to-emerald-700 text-white rounded-2xl p-6 shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Field Overview: {user?.full_name || 'ASHA Worker'}
+          </h1>
+          <p className="text-teal-100 text-sm mt-1">
+            Monitoring active post-discharge patients in assigned rural block.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button
+            onClick={() => navigate('/asha/patients?add=true')}
+            className="bg-white text-teal-800 hover:bg-teal-50 font-bold px-4 py-2.5 rounded-xl shadow flex items-center gap-2 text-sm"
+          >
+            <Users className="w-4 h-4 text-teal-700" />
+            <span>+ Add Patient</span>
+          </Button>
           <Badge variant="success" className="bg-emerald-500/20 text-emerald-100 border border-emerald-400/30">
             Active Status
           </Badge>
@@ -143,7 +147,15 @@ export const AshaHome: React.FC = () => {
       {/* Quick Action Navigation */}
       <Card className="p-6">
         <h3 className="text-lg font-bold text-slate-800 mb-4">Field Actions</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+          <Button
+            onClick={() => navigate('/asha/patients?add=true')}
+            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 shadow-sm"
+          >
+            <Users className="w-4 h-4" />
+            <span>+ Add Patient</span>
+          </Button>
+
           <Button
             onClick={() => navigate('/asha/map')}
             className="w-full bg-teal-700 hover:bg-teal-600 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2"

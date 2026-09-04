@@ -317,6 +317,22 @@ class ChatService:
         await self.send_message(conversation_id, "patient", user_message, sender_id=sender_str)
         bot_msg = await self.send_message(conversation_id, "ai", response_text, sender_id=sender_str)
 
+        # 6. Route health/symptom message through Clinical Pipeline.
+        #    The AI chat NEVER decides risk — the deterministic rule engine does.
+        risk_update = None
+        if is_health_concern and self.db and user and getattr(user, "patient_id", None):
+            try:
+                from ..clinical.service import ClinicalPipelineService
+                clinical_service = ClinicalPipelineService(self.db)
+                risk_update = await clinical_service.process_clinical_input(
+                    patient_id=str(user.patient_id),
+                    reporter="patient",
+                    input_text=user_message,
+                    method="app",
+                )
+            except Exception as e:
+                print(f"[chat\u2192clinical] pipeline error: {e}")
+
         return {
             "id": bot_msg.get("id", str(uuid.uuid4())),
             "role": "assistant",
@@ -324,6 +340,8 @@ class ChatService:
             "response": response_text,
             "is_health_concern": is_health_concern,
             "severity": severity,
+            "risk_level": risk_update.get("risk_level") if risk_update else severity,
+            "risk_reasons": (risk_update.get("latest_risk") or {}).get("risk_reasons", []) if risk_update else [],
             "asha_worker": asha_dict,
             "facilities": facilities[:3],
             "sources": sources,

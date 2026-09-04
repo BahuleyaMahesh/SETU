@@ -60,13 +60,20 @@ class RiskEngineService:
             patient.risk_level = evaluation.risk_level.value
             patient.last_risk_evaluation = datetime.utcnow()
 
-        requires_escalation = evaluation.risk_level == RiskLevel.CRITICAL
+        requires_escalation = evaluation.risk_level in (RiskLevel.CRITICAL, RiskLevel.WARNING)
         if requires_escalation:
-            await self._create_alert(patient_id, evaluation.reasons, evaluation.score)
+            await self._create_alert(
+                patient_id=patient_id,
+                risk_record_id=str(risk.id),
+                risk_level=evaluation.risk_level.value,
+                reasons=evaluation.reasons,
+                score=evaluation.score,
+            )
 
         await self.db.commit()
 
         return {
+            "id": str(risk.id),
             "risk_score": evaluation.score,
             "risk_level": evaluation.risk_level.value,
             "risk_factors": evaluation.factors,
@@ -77,34 +84,46 @@ class RiskEngineService:
     async def _create_alert(
         self,
         patient_id: str,
+        risk_record_id: str,
+        risk_level: str,
         reasons: List[str],
         score: float,
     ):
-        """Create critical alert via AlertService and notify the assigned ASHA."""
-        await self.alert_service.create_alert(
-            patient_id=patient_id,
-            severity="critical",
-            risk_level="critical",
-            alert_type="checkin_risk",
-            title="Critical risk detected",
-            description="; ".join(reasons) if reasons else f"Risk score: {score}",
-            triggered_by="risk_engine",
-        )
+        """Create warning/critical alert via AlertService and notify assigned ASHA & Hospital."""
+        severity = "critical" if risk_level == "critical" else "medium"
+        title = f"{risk_level.capitalize()} risk detected"
+        description = "; ".join(reasons) if reasons else f"Risk score: {score}"
 
         patient_stmt = select(Patient).filter(Patient.id == uuid.UUID(patient_id))
         patient_result = await self.db.execute(patient_stmt)
         patient = patient_result.scalar_one_or_none()
+
+        alert = await self.alert_service.create_alert(
+            patient_id=patient_id,
+            severity=severity,
+            risk_level=risk_level,
+            alert_type="symptom_alert",
+            title=title,
+            description=description,
+            triggered_by="risk_engine",
+            hospital_id=str(patient.hospital_id) if patient and patient.hospital_id else None,
+            asha_worker_id=str(patient.assigned_asha_id) if patient and patient.assigned_asha_id else None,
+        )
+
+        if alert and hasattr(alert, 'risk_record_id'):
+            alert.risk_record_id = uuid.UUID(risk_record_id)
+
         if patient and patient.assigned_asha_id:
             asha_user_stmt = select(User).filter(User.asha_worker_id == patient.assigned_asha_id)
             asha_user_result = await self.db.execute(asha_user_stmt)
-            asha_user = asha_user_result.scalar_one_or_none()
+            asha_user = asha_user_result.scalars().first()
             if asha_user:
                 await self.notification_service.send_notification(
                     str(asha_user.id),
                     "asha",
                     str(uuid.uuid4()),
-                    "Critical Patient Risk",
-                    f"Patient {patient.full_name} has critical risk: {'; '.join(reasons) if reasons else score}",
+                    f"{risk_level.capitalize()} Patient Risk Alert",
+                    f"Patient {patient.full_name} has {risk_level} risk: {description}",
                 )
 
     async def get_risk_history(self, patient_id: str, limit: int = 50) -> List[Dict[str, Any]]:

@@ -54,6 +54,11 @@ RISK_FACTORS: Dict[str, RiskFactor] = {
     "dehydration": RiskFactor("dehydration", weight=5, level="warning"),
     "vomiting": RiskFactor("vomiting", weight=1, level="normal"),
     "diarrhea": RiskFactor("diarrhea", weight=1, level="normal"),
+    "weakness": RiskFactor("weakness", weight=3, level="warning"),
+    "dizziness": RiskFactor("dizziness", weight=3, level="warning"),
+    "fatigue": RiskFactor("fatigue", weight=1, level="normal"),
+    "headache": RiskFactor("headache", weight=2, level="warning"),
+    "cough": RiskFactor("cough", weight=1, level="normal"),
     # High-risk patient factors
     "age_over_60": RiskFactor("age_over_60", weight=5, level="warning"),
     "age_under_1": RiskFactor("age_under_1", weight=5, level="warning"),

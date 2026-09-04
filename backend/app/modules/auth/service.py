@@ -37,8 +37,21 @@ class AuthService:
         # account — only the account (email) needs to be real. Password is
         # still hashed and stored at registration, but never checked here.
 
-        if not user.is_active:
-            return None, "User is inactive"
+        # Ensure ASHA worker profile exists
+        if user.role == "asha" and not user.asha_worker_id:
+            asha = ASHAWorker(
+                id=uuid.uuid4(),
+                name=user.full_name,
+                asha_id=f"ASHA-{uuid.uuid4().hex[:8].upper()}",
+                phone=user.phone or "+91-9876543210",
+                district="Mandya",
+                block="Rural Block A",
+                assigned_villages=["Village Alpha"],
+            )
+            self.db.add(asha)
+            await self.db.flush()
+            user.asha_worker_id = asha.id
+            await self.db.commit()
 
         # Create token
         token = create_access_token(
