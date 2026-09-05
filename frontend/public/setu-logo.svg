@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="orangeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF7A38"/>
+      <stop offset="100%" stop-color="#F25100"/>
+    </linearGradient>
+    <linearGradient id="tealGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0080A3"/>
+      <stop offset="100%" stop-color="#004D66"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Radio / Pulse Waves -->
+  <path d="M 215,90 A 45,45 0 0,1 285,90" fill="none" stroke="url(#orangeGrad)" stroke-width="7" stroke-linecap="round" opacity="0.6"/>
+  <path d="M 200,75 A 65,65 0 0,1 300,75" fill="none" stroke="url(#orangeGrad)" stroke-width="7" stroke-linecap="round" opacity="0.4"/>
+  <circle cx="250" cy="105" r="14" fill="url(#orangeGrad)"/>
+
+  <!-- Top Orange Curve of 'S' -->
+  <path d="M 290,135 C 210,135 190,185 200,215 C 210,245 270,235 250,265 C 240,280 200,280 180,260" fill="none" stroke="url(#orangeGrad)" stroke-width="32" stroke-linecap="round"/>
+
+  <!-- Bottom Teal Curve of 'S' -->
+  <path d="M 210,265 C 290,265 310,215 300,185 C 290,155 230,165 250,135 C 260,120 300,120 320,140" fill="none" stroke="url(#tealGrad)" stroke-width="32" stroke-linecap="round"/>
+  
+  <!-- Main Swoosh -->
+  <path d="M 195,310 Q 270,250 325,275 Q 260,330 195,310 Z" fill="url(#tealGrad)"/>
+
+  <!-- SETU Typography -->
+  <text x="250" y="420" font-family="'Inter', 'Montserrat', 'Segoe UI', sans-serif" font-size="64" font-weight="800" fill="#1E293B" letter-spacing="18" text-anchor="middle">SETU</text>
+</svg>

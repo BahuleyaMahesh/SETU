@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SETU - Healthcare Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f3f4f6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        /* Header */
+        header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: bold;
+            font-size: 1.25rem;
+            color: #1f2937;
+        }
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: #2563eb;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        .tabs {
+            display: flex;
+            gap: 1rem;
+        }
+        .tab-button {
+            padding: 0.5rem 1rem;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+            color: #6b7280;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+        }
+        .tab-button.active {
+            color: #2563eb;
+            border-bottom-color: #2563eb;
+        }
+        .tab-button:hover {
+            color: #1f2937;
+        }
+        .logout-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        /* Main Content */
+        .main {
+            padding: 2rem;
+        }
+        .content {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        h1 {
+            color: #1f2937;
+            margin-bottom: 1.5rem;
+        }
+        h2 {
+            color: #374151;
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+        }
+        /* Dashboard Grid */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .kpi-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .kpi-card.green {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        .kpi-card.yellow {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+        .kpi-card.red {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+        .kpi-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 0.5rem;
+        }
+        .kpi-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+        /* Patient List */
+        .patient-list {
+            display: grid;
+            gap: 1rem;
+        }
+        .patient-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1.5rem;
+            background: #f9fafb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        .patient-card:hover {
+            background: white;
+            border-color: #2563eb;
+            box-shadow: 0 4px 12px rgba(37,99,235,0.1);
+        }
+        .patient-info h3 {
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+        }
+        .patient-info p {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .badge.normal {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .badge.warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .badge.critical {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        /* Buttons */
+        .button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+        .button:hover {
+            background: #1d4ed8;
+        }
+        .button.outline {
+            background: white;
+            color: #2563eb;
+            border: 1px solid #2563eb;
+        }
+        .button.outline:hover {
+            background: #eff6ff;
+        }
+        /* Form */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #374151;
+            font-weight: 500;
+        }
+        input[type="email"],
+        input[type="password"],
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+        input[type="range"] {
+            width: 100%;
+            margin: 1rem 0;
+        }
+        .login-container {
+            max-width: 400px;
+            margin: 4rem auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .login-container h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .demo-users {
+            background: #f0f9ff;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-top: 1.5rem;
+            font-size: 0.85rem;
+            color: #1e40af;
+        }
+        .demo-users strong {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        .demo-user {
+            margin: 0.5rem 0;
+            padding: 0.5rem;
+            background: white;
+            border-radius: 4px;
+        }
+        /* Charts */
+        .chart-container {
+            margin: 2rem 0;
+            background: #f9fafb;
+            padding: 1.5rem;
+            border-radius: 8px;
+        }
+        .chart-bar {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            height: 200px;
+            margin: 1rem 0;
+        }
+        .bar {
+            width: 60px;
+            background: #2563eb;
+            border-radius: 4px 4px 0 0;
+            position: relative;
+            transition: all 0.3s;
+        }
+        .bar:hover {
+            opacity: 0.8;
+        }
+        .bar-label {
+            position: absolute;
+            bottom: -25px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
+        .bar-value {
+            position: absolute;
+            top: -25px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-weight: bold;
+            color: #1f2937;
+        }
+        .symptom-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 0.75rem;
+            margin: 1rem 0;
+        }
+        .symptom-btn {
+            padding: 0.75rem;
+            border: 2px solid #d1d5db;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+            color: #374151;
+        }
+        .symptom-btn:hover {
+            border-color: #2563eb;
+        }
+        .symptom-btn.selected {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+        .alert-item {
+            border-left: 4px solid #ef4444;
+            background: #fef2f2;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+        .alert-item.warning {
+            border-left-color: #f59e0b;
+            background: #fffbeb;
+        }
+        .alert-item.success {
+            border-left-color: #10b981;
+            background: #f0fdf4;
+        }
+        .bottom-nav {
+            display: none;
+        }
+        @media (max-width: 768px) {
+            .tabs {
+                display: none;
+            }
+            .bottom-nav {
+                display: flex;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: white;
+                border-top: 1px solid #e5e7eb;
+                padding: 0.5rem 0;
+                justify-content: space-around;
+            }
+            .bottom-nav button {
+                flex: 1;
+                background: none;
+                border: none;
+                padding: 0.75rem;
+                cursor: pointer;
+                font-size: 0.8rem;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 0.25rem;
+                color: #6b7280;
+            }
+            .bottom-nav button.active {
+                color: #2563eb;
+            }
+            main {
+                padding-bottom: 5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-container">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <div class="logo-icon" style="margin: 0 auto; width: 60px; height: 60px; font-size: 1.5rem;">S</div>
+            <h1 style="margin-top: 1rem;">SETU Healthcare</h1>
+            <p style="color: #6b7280;">Post-Discharge Rural Health Platform</p>
+        </div>
+
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="email" value="hospital@setu.com" placeholder="Enter email">
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="password" value="password123" placeholder="Enter password">
+        </div>
+        <button class="button" onclick="login()" style="width: 100%; padding: 1rem;">Login</button>
+
+        <div class="demo-users">
+            <strong>Demo Credentials:</strong>
+            <div class="demo-user"><strong>Hospital:</strong> hospital@setu.com / password123</div>
+            <div class="demo-user"><strong>ASHA:</strong> asha@setu.com / password123</div>
+            <div class="demo-user"><strong>Patient:</strong> patient@setu.com / password123</div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="mainApp" style="display: none;">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">S</div>
+                <span>SETU</span>
+            </div>
+            <div class="tabs" id="desktopTabs">
+                <button class="tab-button active" onclick="switchTab('dashboard')">Dashboard</button>
+                <button class="tab-button" onclick="switchTab('patients')">Patients</button>
+                <button class="tab-button" onclick="switchTab('alerts')">Alerts</button>
+                <button class="tab-button" onclick="switchTab('analytics')">Analytics</button>
+                <button class="tab-button" onclick="switchTab('reports')">Reports</button>
+            </div>
+            <div>
+                <span id="userName" style="margin-right: 1rem; color: #6b7280;"></span>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </header>
+
+        <main class="main">
+            <div class="content">
+                <!-- Dashboard Tab -->
+                <div id="dashboard" class="tab-content active">
+                    <h1>Hospital Dashboard</h1>
+                    <div class="kpi-grid">
+                        <div class="kpi-card green">
+                            <div class="kpi-label">Total Patients</div>
+                            <div class="kpi-value">150</div>
+                        </div>
+                        <div class="kpi-card red">
+                            <div class="kpi-label">Critical</div>
+                            <div class="kpi-value">12</div>
+                        </div>
+                        <div class="kpi-card yellow">
+                            <div class="kpi-label">Warning</div>
+                            <div class="kpi-value">35</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Open Alerts</div>
+                            <div class="kpi-value">8</div>
+                        </div>
+                    </div>
+
+                    <h2>Risk Distribution</h2>
+                    <div class="chart-container">
+                        <div class="chart-bar">
+                            <div class="bar" style="height: 75%; background: #10b981;">
+                                <div class="bar-value">103</div>
+                                <div class="bar-label">Normal</div>
+                            </div>
+                            <div class="bar" style="height: 40%; background: #f59e0b;">
+                                <div class="bar-value">35</div>
+                                <div class="bar-label">Warning</div>
+                            </div>
+                            <div class="bar" style="height: 25%; background: #ef4444;">
+                                <div class="bar-value">12</div>
+                                <div class="bar-label">Critical</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Patients Tab -->
+                <div id="patients" class="tab-content">
+                    <h1>Patients</h1>
+                    <div style="margin-bottom: 1rem;">
+                        <input type="text" placeholder="Search patients..." style="width: 100%; max-width: 300px;">
+                    </div>
+                    <div class="patient-list">
+                        <div class="patient-card">
+                            <div class="patient-info">
+                                <h3>Ramesh Kumar</h3>
+                                <p>MRN: MRN001 | Age: 66 | Village A</p>
+                            </div>
+                            <span class="badge normal">Normal</span>
+                        </div>
+                        <div class="patient-card">
+                            <div class="patient-info">
+                                <h3>Sita Devi</h3>
+                                <p>MRN: MRN002 | Age: 52 | Village A</p>
+                            </div>
+                            <span class="badge warning">Warning</span>
+                        </div>
+                        <div class="patient-card">
+                            <div class="patient-info">
+                                <h3>Mohan Singh</h3>
+                                <p>MRN: MRN003 | Age: 71 | Village B</p>
+                            </div>
+                            <span class="badge critical">Critical</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alerts Tab -->
+                <div id="alerts" class="tab-content">
+                    <h1>Alert Queue</h1>
+                    <div style="margin-bottom: 1rem;">
+                        <span class="badge critical">3 Critical Alerts</span>
+                    </div>
+                    <div>
+                        <div class="alert-item">
+                            <h3 style="margin-bottom: 0.5rem;">Critical Condition Detected</h3>
+                            <p style="color: #374151; margin-bottom: 0.75rem;">Mohan Singh - Breathing difficulty and chest pain</p>
+                            <p style="color: #6b7280; font-size: 0.85rem; margin-bottom: 1rem;">2024-01-15 10:30 AM</p>
+                            <button class="button">Acknowledge</button>
+                            <button class="button outline" style="margin-left: 0.5rem;">Escalate</button>
+                        </div>
+                        <div class="alert-item warning">
+                            <h3 style="margin-bottom: 0.5rem;">Elevated Risk Score</h3>
+                            <p style="color: #374151; margin-bottom: 0.75rem;">Sita Devi - Risk level increased to warning</p>
+                            <p style="color: #6b7280; font-size: 0.85rem; margin-bottom: 1rem;">2024-01-15 09:15 AM</p>
+                            <button class="button">Acknowledge</button>
+                            <button class="button outline" style="margin-left: 0.5rem;">Resolve</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics Tab -->
+                <div id="analytics" class="tab-content">
+                    <h1>Analytics</h1>
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-label">Risk Evaluations (24h)</div>
+                            <div class="kpi-value">245</div>
+                        </div>
+                        <div class="kpi-card red">
+                            <div class="kpi-label">Critical Patient Visits</div>
+                            <div class="kpi-value">12</div>
+                        </div>
+                        <div class="kpi-card green">
+                            <div class="kpi-label">Alert Resolution Rate</div>
+                            <div class="kpi-value">92%</div>
+                        </div>
+                    </div>
+                    <h2>Weekly Risk Trend</h2>
+                    <div class="chart-container">
+                        <div class="chart-bar" style="align-items: flex-end; height: 150px;">
+                            <div class="bar" style="height: 60%;">
+                                <div class="bar-value">45</div>
+                                <div class="bar-label">Mon</div>
+                            </div>
+                            <div class="bar" style="height: 70%;">
+                                <div class="bar-value">52</div>
+                                <div class="bar-label">Tue</div>
+                            </div>
+                            <div class="bar" style="height: 55%;">
+                                <div class="bar-value">41</div>
+                                <div class="bar-label">Wed</div>
+                            </div>
+                            <div class="bar" style="height: 75%;">
+                                <div class="bar-value">56</div>
+                                <div class="bar-label">Thu</div>
+                            </div>
+                            <div class="bar" style="height: 65%;">
+                                <div class="bar-value">48</div>
+                                <div class="bar-label">Fri</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reports Tab -->
+                <div id="reports" class="tab-content">
+                    <h1>Reports</h1>
+                    <div class="kpi-grid" style="grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));">
+                        <div class="kpi-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); cursor: pointer; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='translateY(0)'">
+                            <div class="kpi-label">Patient Report</div>
+                            <div style="margin-top: 1rem;">
+                                <button class="button" style="background: white; color: #667eea; border: none; width: 100%;">Generate</button>
+                            </div>
+                        </div>
+                        <div class="kpi-card green" style="cursor: pointer; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='translateY(0)'">
+                            <div class="kpi-label">Risk Analysis</div>
+                            <div style="margin-top: 1rem;">
+                                <button class="button" style="background: white; color: #10b981; border: none; width: 100%;">Generate</button>
+                            </div>
+                        </div>
+                        <div class="kpi-card yellow" style="cursor: pointer; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='translateY(0)'">
+                            <div class="kpi-label">Alert Summary</div>
+                            <div style="margin-top: 1rem;">
+                                <button class="button" style="background: white; color: #f59e0b; border: none; width: 100%;">Generate</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <nav class="bottom-nav" id="mobileNav">
+            <button class="active" onclick="switchTab('dashboard')">📊 Dashboard</button>
+            <button onclick="switchTab('patients')">👥 Patients</button>
+            <button onclick="switchTab('alerts')">🔔 Alerts</button>
+            <button onclick="switchTab('analytics')">📈 Analytics</button>
+        </nav>
+    </div>
+
+    <script>
+        let currentUser = null;
+
+        function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            if (!email || !password) {
+                alert('Please enter email and password');
+                return;
+            }
+
+            // Simulate login
+            currentUser = {
+                email: email,
+                name: email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1),
+                role: email.includes('hospital') ? 'Hospital Admin' : email.includes('asha') ? 'ASHA Worker' : 'Patient'
+            };
+
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'block';
+            document.getElementById('userName').textContent = `${currentUser.name} (${currentUser.role})`;
+        }
+
+        function logout() {
+            currentUser = null;
+            document.getElementById('loginScreen').style.display = 'block';
+            document.getElementById('mainApp').style.display = 'none';
+            document.getElementById('email').value = 'hospital@setu.com';
+            document.getElementById('password').value = 'password123';
+        }
+
+        function switchTab(tabName) {
+            // Hide all tabs
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+
+            // Update desktop tabs styling
+            document.querySelectorAll('.tabs .tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Update mobile nav styling
+            document.querySelectorAll('.bottom-nav button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>
